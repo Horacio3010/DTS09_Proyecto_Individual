@@ -10,7 +10,7 @@ async def read_root():
 @app.on_event('startup')
 async def startup():
     global dfcatalogo
-    dfcatalogo = pd.read_csv(r'C:\Users\oomph\Documents\Henry Data Science\Proyecto Individual V1\df_catalogo_v2.csv')
+    dfcatalogo = pd.read_csv(r'C:\Users\oomph\Documents\Henry Data Science\DTS09_Proyecto_Individual\df_catalogo_v2.csv')
 
 #1 Película (sólo película, no serie, ni documentales, etc) con mayor duración según año, plataforma y tipo de duración.  La función debe llamarse get_max_duration(year, platform, duration_type) y debe devolver sólo el string del nombre de la película.
 
