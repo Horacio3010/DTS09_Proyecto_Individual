@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pickle
+
 
 app = FastAPI(title='Proyecto Individual', description='Data 09', version='1.0.1')
 
@@ -11,6 +15,7 @@ async def read_root():
 async def startup():
     global dfcatalogo
     dfcatalogo = pd.read_csv(r'C:\Users\oomph\Documents\Henry Data Science\DTS09_Proyecto_Individual\df_catalogo_v2.csv')
+
 
 #1 Película (sólo película, no serie, ni documentales, etc) con mayor duración según año, plataforma y tipo de duración.  La función debe llamarse get_max_duration(year, platform, duration_type) y debe devolver sólo el string del nombre de la película.
 
@@ -63,24 +68,17 @@ def get_count_platform(platform: str):
 
 @app.get('/get_actor')
 def get_actor(platform:str, year:int ):
-    # Filtramos el DataFrame según la plataforma y el año proporcionados
     df_filtered = dfcatalogo[(dfcatalogo['plataforma'] == platform) & (dfcatalogo['release_year'] == year)]
+    actor_count = {}
+    for actors in df_filtered['cast']:
+        if isinstance(actors, str):
+            for actor in actors.split(','):
+                actor_count[actor.strip()] = actor_count.get(actor.strip(), 0) + 1
+    if len(actor_count) == 0:
+        return "No se encontraron actores"
+    else:
+        return 'Actor que más se repite según plataforma y año:  ' + max(actor_count, key=actor_count.get)
 
-    # Separamos los nombres de los actores en una lista y eliminamos los valores nulos
-    actor_list = df_filtered['cast'].dropna().str.split(',').explode().str.strip()
-
-    # Contamos el número de veces que cada actor aparece en la lista
-    actor_counts = actor_list.value_counts()
-
-    # Devolvemos el nombre del actor que aparece con más frecuencia
-    respuesta = actor_counts.idxmax()
-
-    return {
-        'plataforma': platform,
-        'anio': year,
-        'actor': respuesta,
-        'apariciones': actor_counts[respuesta]
-    }
 
 #5 La cantidad de contenidos/productos (todo lo disponible en streaming) que se publicó por país y año.  La función debe llamarse prod_per_county(tipo,pais,anio) deberia devolver el tipo de contenido (pelicula,serie,documental) por pais  y año en un diccionario con las variables llamadas 'pais' (nombre del pais), 'anio' (año), 'pelicula' (tipo de contenido).
 
@@ -110,3 +108,7 @@ def get_contents(rating:str):
     # Devolvemos la cantidad total de contenidos/productos con ese rating
     return cantidad
 
+#Sistema de recomendacion
+@app.get('/get_recomendation')
+def get_recommendation(title:str):
+    return {'recomendacion':title}
