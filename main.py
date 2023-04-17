@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pickle
 
 
+
 app = FastAPI(title='Proyecto Individual', description='Data 09', version='1.0.1')
 
 @app.get('/')
@@ -14,8 +15,8 @@ async def read_root():
 @app.on_event('startup')
 async def startup():
     global dfcatalogo
-    dfcatalogo = pd.read_csv(r'C:\Users\oomph\Documents\Henry Data Science\DTS09_Proyecto_Individual\df_catalogo_v2.csv')
-
+    dfcatalogo = pd.read_parquet('dfcatalogo.parquet', engine='pyarrow')
+    
 
 #1 Película (sólo película, no serie, ni documentales, etc) con mayor duración según año, plataforma y tipo de duración.  La función debe llamarse get_max_duration(year, platform, duration_type) y debe devolver sólo el string del nombre de la película.
 
@@ -108,7 +109,30 @@ def get_contents(rating:str):
     # Devolvemos la cantidad total de contenidos/productos con ese rating
     return cantidad
 
+with open('similarity_matrix.pickle', 'rb') as f:
+        similarity_matrix = pickle.load(f)
+
+
 #Sistema de recomendacion
 @app.get('/get_recomendation')
 def get_recommendation(title:str):
-    return {'recomendacion':title}
+    idx = dfcatalogo[dfcatalogo['title'] == title].index[0]
+    print(idx)
+    
+    # Obtiene las películas o programas de televisión similares utilizando la matriz de similitud
+    similar_movies = list(enumerate(similarity_matrix[idx]))
+    
+    # Obtiene el índice de la película o programa de televisión en el DataFrame dfcatalogo que coincide con el título proporcionado
+    idx = dfcatalogo[dfcatalogo['title'] == title].index[0]
+    
+    # Obtiene las películas o programas de televisión similares utilizando la matriz de similitud
+    similar_movies = list(enumerate(similarity_matrix[idx]))
+    
+    # Ordena las películas o programas de televisión similares por similitud en orden descendente
+    similar_movies = sorted(similar_movies, key=lambda x: x[1], reverse=True)
+    
+    # Obtiene las 5 películas o programas de televisión más similares al título proporcionado
+    top_movies = [dfcatalogo.iloc[i[0]].title for i in similar_movies[1:6]]
+    
+    # Devuelve una respuesta que contiene las 5 películas o programas de televisión más similares al título proporcionado
+    return {'recommendation':top_movies}

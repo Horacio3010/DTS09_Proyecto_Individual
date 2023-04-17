@@ -1,0 +1,7 @@
+# Ignorar archivos de caché
+*.log
+*.cache
+
+# Ignorar archivos
+/Users/oomph/Documents/Henry Data Science/DTS09_Proyecto_Individual/sistema.ipynb
+/Users/oomph/Documents/Henry Data Science/DTS09_Proyecto_Individual/funciones_api.ipynb
