@@ -62,3 +62,4 @@ tzdata
 uvicorn
 wcwidth
 xyzservices
+pyarrow
